@@ -1651,6 +1651,20 @@ install_enclaves(
   TARGETS
   opensslcrypto
   opensslssl
+  EXPORT
+  openenclave-targets
+  ARCHIVE
+  DESTINATION
+  ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
+install(
+  DIRECTORY ${OPENSSL_INSTALL_INCLUDES}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty
+  PATTERN "__DECC_INCLUDE_EPILOGUE.H" EXCLUDE
+  PATTERN "__DECC_INCLUDE_PROLOGUE.H" EXCLUDE
+  PATTERN "opensslconf.h.in" EXCLUDE)
+
+install_enclaves(
+  TARGETS
   opensslcrypto_3
   opensslssl_3
   EXPORT
@@ -1659,7 +1673,7 @@ install_enclaves(
   DESTINATION
   ${CMAKE_INSTALL_LIBDIR}/openenclave/enclave)
 install(
-  DIRECTORY ${OPENSSL_INSTALL_INCLUDES}
+  DIRECTORY ${OPENSSL_3_INSTALL_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openenclave/3rdparty
   PATTERN "__DECC_INCLUDE_EPILOGUE.H" EXCLUDE
   PATTERN "__DECC_INCLUDE_PROLOGUE.H" EXCLUDE
