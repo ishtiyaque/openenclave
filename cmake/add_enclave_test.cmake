@@ -53,28 +53,29 @@ function (add_enclave_test TEST_NAME HOST_FILE ENC_FILE)
       string(REGEX REPLACE "_signed" ".signed" TEST_ENCFILE ${ENC_FILE})
     endif ()
 
-    # Copy the enclave subfolder from Linux
+    # Copy the enclave file from Linux
     # This takes a dependency on host binary to make sure it exists, in addition to
-    # enclave binary in linux. It should only be executed once for the target build
-    # directory so that multiple tests hosted in the same enclave folder are copied
-    # only once.
-    if (NOT TARGET ${CMAKE_CURRENT_BINARY_DIR}__windows_include)
+    # enclave binary in linux.
+    get_filename_component(TEST_NAME_WITHOUT_SLASH ${TEST_NAME} NAME)
+    set(TEST_ENCFILE_OUTPUT
+        ${CMAKE_CURRENT_BINARY_DIR}/${TEST_ENCSUBPATH}/${TEST_ENCFILE})
+    set(TEST_ENCFILE_TARGET ${TEST_NAME_WITHOUT_SLASH}.windows)
+    if (NOT TARGET ${TEST_ENCFILE_TARGET})
       add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}_windows_include
+        OUTPUT ${TEST_ENCFILE_OUTPUT}
         COMMAND
-          ${CMAKE_COMMAND} -E copy_directory
-          ${LINUX_BIN_DIR}/${TEST_DIR}/${TEST_ENCSUBPATH}
-          ${CMAKE_CURRENT_BINARY_DIR}/${TEST_ENCSUBPATH}
+          ${CMAKE_COMMAND} -E copy
+          ${LINUX_BIN_DIR}/${TEST_DIR}/${TEST_ENCSUBPATH}/${TEST_ENCFILE}
+          ${TEST_ENCFILE_OUTPUT}
         DEPENDS $<TARGET_FILE:${HOST_FILE}>
                 ${LINUX_BIN_DIR}/${TEST_DIR}/${TEST_ENCSUBPATH}/${TEST_ENCFILE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    endif ()
 
-    # Add a custom target to ALL so that this step always needs to be run if
-    # this function is invoked
-    get_filename_component(TEST_NAME_WITHOUT_SLASH ${TEST_NAME} NAME)
-    add_custom_target(${TEST_NAME_WITHOUT_SLASH}.windows ALL
-                      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}_windows_include)
+      # Add a custom target to ALL so that this step always needs to be run if
+      # this function is invoked
+      add_custom_target(${TEST_ENCFILE_TARGET} ALL
+                        DEPENDS ${TEST_ENCFILE_OUTPUT})
+    endif ()
 
     add_test(
       NAME ${TEST_NAME}
